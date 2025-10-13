@@ -1,0 +1,11 @@
+id: task-001
+title: "Implementar regra edge case no score_value"
+goal: |
+  Ajustar a função score_value para retornar 0 quando a soma for superior a 100.
+acceptance:
+  tests: ["tests/test_logic.py::test_score_regular", "tests/test_logic.py::test_score_zero_on_negative"]
+limits:
+  max_iterations: 6
+  max_minutes: 20
+
+
