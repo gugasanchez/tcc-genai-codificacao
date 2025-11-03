@@ -1,8 +1,9 @@
 type Props = {
   code: string;
+  className?: string;
 };
 
-export function CodePreview({ code }: Props) {
+export function CodePreview({ code, className }: Props) {
   const wrapped = `<!doctype html>
 <html>
   <head>
@@ -19,7 +20,7 @@ export function CodePreview({ code }: Props) {
     <iframe
       title="preview"
       sandbox="allow-scripts"
-      className="h-[600px] w-full rounded-md border"
+      className={className || "h-[600px] w-full rounded-md border"}
       srcDoc={wrapped}
     />
   );
