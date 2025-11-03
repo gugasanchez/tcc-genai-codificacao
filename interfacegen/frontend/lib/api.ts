@@ -42,6 +42,26 @@ export type FeedbackCreate = {
   comments?: string;
 };
 
+export type DraftRequest = {
+  session_id?: number;
+  participant_id?: string; // required on first turn
+  turn_index: number;
+  current_prompt: string;
+  user_answer?: string;
+};
+
+export type DraftResponse = {
+  session_id: number;
+  ai_question: string;
+  suggestions: string[];
+  prompt_snapshot: string;
+  wcag_flags: Record<string, unknown>;
+  ready: boolean;
+  model: string;
+  temperature: number;
+  duration_ms: number;
+};
+
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
   "http://localhost:8000/api";
@@ -73,6 +93,16 @@ export const api = {
     http<CreateParticipantResponse>("/participants", { method: "POST" }),
   generate: (payload: GenerateDirectRequest | GenerateWizardRequest) =>
     http<GenerateResponse>("/sessions/generate", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  draft: (payload: DraftRequest) =>
+    http<DraftResponse>("/sessions/draft", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  finalize: (payload: GenerateDirectRequest | GenerateWizardRequest) =>
+    http<GenerateResponse>("/sessions/final", {
       method: "POST",
       body: JSON.stringify(payload),
     }),

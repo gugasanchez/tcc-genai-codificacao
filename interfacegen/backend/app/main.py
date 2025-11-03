@@ -33,9 +33,14 @@ app.include_router(participants.router, prefix="/api")
 
 # Criação automática do schema (MVP). Para produção, usar Alembic.
 from app.db.session import Base, engine
+from sqlalchemy import text
 
 @app.on_event("startup")
 def on_startup() -> None:
     Base.metadata.create_all(bind=engine)
+    # Migrações simples (MVP): adiciona colunas se não existirem
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS refine_iterations INTEGER"))
+        conn.execute(text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS final_prompt TEXT"))
 
 

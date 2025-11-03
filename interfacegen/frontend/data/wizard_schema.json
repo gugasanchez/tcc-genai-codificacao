@@ -1,0 +1,42 @@
+{
+  "topics": [
+    {
+      "name": "Funcionais",
+      "examples": [
+        "Navegação: menu, links, breadcrumbs",
+        "Formulários: campos, validação, mensagens",
+        "Conteúdo: seções, herói, CTAs"
+      ]
+    },
+    {
+      "name": "Não Funcionais",
+      "examples": [
+        "Performance: carregamento rápido",
+        "Responsividade: mobile-first",
+        "Internacionalização: textos parametrizados"
+      ]
+    },
+    {
+      "name": "Acessibilidade (WCAG)",
+      "examples": [
+        "Imagens com alt descritivo",
+        "Labels associados a inputs",
+        "Landmarks (header, main, footer)",
+        "Contraste adequado",
+        "Navegação por teclado/tabindex"
+      ]
+    }
+  ],
+  "few_shot": [
+    {
+      "q": "Quais elementos principais devem compor a interface?",
+      "s": ["Herói com CTA", "Seção features", "Formulário com labels"]
+    },
+    {
+      "q": "Há requisitos de acessibilidade específicos?",
+      "s": ["Contraste alto", "Alt em imagens", "Navegação por teclado"]
+    }
+  ]
+}
+
+

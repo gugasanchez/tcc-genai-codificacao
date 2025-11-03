@@ -76,4 +76,27 @@ class LLMClient:
             print({"openai_unexpected_error": str(e)})
             return _fallback_html(None)
 
+    def chat(self, messages: list[dict[str, str]], *, temperature: float, max_tokens: int | None = None, model: str | None = None) -> str:
+        if not self.settings.openai_api_key:
+            return "{\"question\":\"Defina requisitos principais.\",\"prompt\":\"\",\"wcag_flags\":{},\"suggestions\":[\"Adicionar labels\",\"Incluir alt\",\"Contraste alto\"],\"ready\":false}"
+
+        payload: dict[str, Any] = {
+            "model": model or self.settings.llm_model,
+            "temperature": temperature,
+            "messages": messages,
+        }
+        if max_tokens is not None:
+            payload["max_tokens"] = max_tokens
+
+        headers = {
+            "Authorization": f"Bearer {self.settings.openai_api_key}",
+            "Content-Type": "application/json",
+        }
+        with httpx.Client(timeout=60) as client:
+            r = client.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+            r.raise_for_status()
+            data = r.json()
+            content = data["choices"][0]["message"]["content"]
+            return content.strip()
+
 
