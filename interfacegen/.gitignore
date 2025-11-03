@@ -1,0 +1,23 @@
+# Common
+node_modules/
+.DS_Store
+dist/
+build/
+.env
+.venv/
+__pycache__/
+*.pyc
+
+# Frontend
+.next/
+.turbo/
+coverage/
+
+# Backend
+.mypy_cache/
+.pytest_cache/
+
+# Analysis
+analysis/data/exports/
+
+
