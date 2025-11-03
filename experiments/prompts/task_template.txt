@@ -1,7 +1,0 @@
-Tarefa: {{title}}
-Objetivo: {{goal}}
-Critérios de aceite: {{acceptance}}
-Código-base: FastAPI + funções puras em app/core/
-Responda apenas com DIFF e justificativa curta.
-
-
