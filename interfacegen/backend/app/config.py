@@ -9,6 +9,7 @@ class Settings:
     llm_temperature: float
     audits_cli_path: str
     audits_timeout_seconds: int
+    cors_allow_all: bool
 
     def __init__(self) -> None:
         self.database_url = os.getenv("DATABASE_URL", "postgresql+psycopg2://interfacegen:interfacegen@db:5432/interfacegen")
@@ -17,6 +18,7 @@ class Settings:
         self.llm_temperature = float(os.getenv("LLM_TEMPERATURE", "0.7"))
         self.audits_cli_path = os.getenv("AUDITS_CLI_PATH", "/audits/dist/cli.js")
         self.audits_timeout_seconds = int(os.getenv("AUDITS_TIMEOUT_SECONDS", "10"))
+        self.cors_allow_all = os.getenv("CORS_ALLOW_ALL", "false").lower() in ("1", "true", "yes")
 
 
 @lru_cache(maxsize=1)

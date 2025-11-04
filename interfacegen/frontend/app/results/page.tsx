@@ -11,6 +11,7 @@ export default function ResultsPage() {
   const params = useSearchParams();
   const sessionId = useMemo(() => Number(params.get("sessionId")), [params]);
   const view = useMemo(() => (params.get("view") || "preview"), [params]);
+  const runId = useMemo(() => params.get("runId") || undefined, [params]);
   const [data, setData] = useState<SessionDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,8 +50,8 @@ export default function ResultsPage() {
     return (
       <div className="fixed inset-0 bg-white">
         <CodePreview code={data.response_code} className="absolute inset-0 h-full w-full" />
-        <Link
-          href={`/results?sessionId=${data.id}&view=avaliar`}
+          <Link
+            href={runId ? `/results-compare?runId=${runId}` : `/results?sessionId=${data.id}&view=avaliar`}
           className="fixed bottom-5 right-5 rounded-full bg-blue-600 px-5 py-3 text-white shadow-lg hover:bg-blue-700"
         >
           Avaliar sessão
@@ -65,7 +66,7 @@ export default function ResultsPage() {
       <div className="mx-auto max-w-3xl px-6 py-8">
         <header className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-semibold">Avaliação da sessão #{data!.id}</h1>
-          <Link href={`/results?sessionId=${data!.id}&view=preview`} className="text-sm text-zinc-700 underline">ver preview em tela cheia</Link>
+          <Link href={`/results?sessionId=${data!.id}&view=preview${runId ? `&runId=${runId}` : ""}`} className="text-sm text-zinc-700 underline">ver preview em tela cheia</Link>
         </header>
 
         <section className="rounded-lg border bg-white p-5 shadow-sm">
@@ -99,7 +100,7 @@ export default function ResultsPage() {
 
         <div className="mt-8 flex items-center justify-between">
           <Link href="/" className="text-sm text-zinc-700 underline">início</Link>
-          <Link href={`/results?sessionId=${data!.id}&view=preview`} className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white">Ver preview</Link>
+          <Link href={`/results?sessionId=${data!.id}&view=preview${runId ? `&runId=${runId}` : ""}`} className="rounded-md bg-zinc-900 px-4 py-2 text-sm text-white">Ver preview</Link>
         </div>
       </div>
     </div>

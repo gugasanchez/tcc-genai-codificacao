@@ -10,6 +10,7 @@ from app.services.audits_runner import run_audits
 import uuid
 import hashlib
 import json
+import re
 
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
@@ -68,14 +69,22 @@ def generate_interface(payload: GenerateRequest, db: Session = Depends(get_db)):
     return SessionResponse(session_id=session.id, code=code, metrics=None)
 @router.post("/draft", response_model=DraftResponse)
 def draft_iteration(payload: DraftRequest, db: Session = Depends(get_db)):
-    if payload.session_id is None and not payload.participant_id:
-        raise HTTPException(status_code=400, detail="participant_id é obrigatório na primeira iteração")
+    print({
+        "draft_event": "start",
+        "session_id": payload.session_id,
+        "run_id": payload.run_id,
+        "turn_index": payload.turn_index,
+        "current_prompt_chars": len(payload.current_prompt or ""),
+    })
+    if payload.session_id is None and not (payload.run_id):
+        raise HTTPException(status_code=400, detail="run_id é obrigatório na primeira iteração")
 
     # Cria sessão placeholder se necessário
     if payload.session_id is None:
-        participant_uuid = uuid.UUID(payload.participant_id)  # type: ignore[arg-type]
+        run_uuid = uuid.UUID(payload.run_id)  # type: ignore[arg-type]
         session = models.Session(
-            participant_id=participant_uuid,
+            participant_id=None,
+            run_id=run_uuid,
             mode="wizard",
             prompt=payload.current_prompt,
             response_code=None,
@@ -92,38 +101,124 @@ def draft_iteration(payload: DraftRequest, db: Session = Depends(get_db)):
 
     start = perf_counter()
     llm = LLMClient()
-    messages = build_refine_messages(payload.current_prompt, payload.user_answer or "", payload.turn_index)
+    # Monta mensagens para a LLM (sem requisitos/flags persistidos)
+    messages = build_refine_messages(payload.current_prompt, payload.user_answer or "", payload.turn_index, None)
+    print({
+        "draft_event": "messages_built",
+        "messages_preview": [m.get("role") for m in messages],
+    })
 
     ready = False
-    ai_question = "Quais elementos principais a interface deve conter?"
-    suggestions = ["Menu + herói", "Formulário com labels", "Contraste alto"]
+    ai_question = None  # sem fallback estático
+    suggestions: list[str] = []
     prompt_snapshot = payload.current_prompt
-    wcag_flags = {"alt": False, "label": False, "landmarks": False, "contrast": False, "tabindex": False}
+    # sem wcag_flags / requirements_doc neste fluxo simplificado
+
+    def _try_parse_json(txt: str):
+        preview = (txt or "")[:600]
+        print({"draft_event": "llm_raw_preview", "preview": preview})
+        # normalização leve
+        def _normalize(s: str) -> str:
+            s = s.replace("\ufeff", "")  # BOM
+            # aspas "inteligentes" para aspas normais
+            s = s.replace("\u201c", '"').replace("\u201d", '"').replace("\u2018", '"').replace("\u2019", '"')
+            return s
+        txt = _normalize(txt)
+        # 1) tentativa direta
+        try:
+            direct = json.loads(txt)
+            if isinstance(direct, str):
+                # às vezes vem string contendo JSON; tenta de novo
+                try:
+                    nested = json.loads(direct)
+                    print({"json_parse_strategy": "direct_nested"})
+                    return nested
+                except Exception:
+                    pass
+            print({"json_parse_strategy": "direct"})
+            return direct
+        except Exception:
+            pass
+        # 2) remover cercas de código ```...```
+        try:
+            stripped = txt.strip()
+            if stripped.startswith("```") and stripped.endswith("```"):
+                # remove primeira linha com ```json ou ``` e a última com ```
+                lines = stripped.splitlines()
+                if len(lines) >= 3:
+                    inner = "\n".join(lines[1:-1])
+                    res = json.loads(inner)
+                    print({"json_parse_strategy": "strip_fences"})
+                    return res
+        except Exception:
+            pass
+        # 3) corrigir vírgulas finais e tentar
+        try:
+            fixed = re.sub(r",\s*([}\]])", r"\1", txt)
+            res = json.loads(fixed)
+            print({"json_parse_strategy": "fix_trailing_commas"})
+            return res
+        except Exception:
+            pass
+        # 4) varredura por blocos balanceados { ... }
+        try:
+            stack = 0
+            start = -1
+            candidates = []
+            for i, ch in enumerate(txt):
+                if ch == '{':
+                    if stack == 0:
+                        start = i
+                    stack += 1
+                elif ch == '}':
+                    stack -= 1
+                    if stack == 0 and start != -1:
+                        candidates.append(txt[start:i+1])
+                        start = -1
+            # tenta cada candidato e escolhe o que contém campos esperados
+            for c in candidates:
+                try:
+                    obj = json.loads(c)
+                    keys = obj.keys() if isinstance(obj, dict) else []
+                    if any(k in keys for k in ("question", "prompt", "wcag_flags", "requirements_doc")):
+                        print({"json_parse_strategy": "balanced_block"})
+                        return obj
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        # 5) heurística: substituir aspas simples por duplas somente fora de contexto perigoso
+        try:
+            single_fixed = re.sub(r"'", '"', txt)
+            res = json.loads(single_fixed)
+            print({"json_parse_strategy": "replace_single_quotes"})
+            return res
+        except Exception:
+            pass
+        # falha
+        raise ValueError("could not coerce JSON from LLM content")
 
     try:
-        content = llm.chat(messages, temperature=0.3, max_tokens=300)
-        # Tenta extrair JSON do conteúdo
-        obj = None
-        try:
-            # Se vier marcado, tenta pegar primeiro objeto JSON
-            start_i = content.find("{")
-            end_i = content.rfind("}")
-            if start_i != -1 and end_i != -1 and end_i > start_i:
-                obj = json.loads(content[start_i:end_i+1])
-        except Exception:
-            obj = None
-        if isinstance(obj, dict):
-            ai_question = str(obj.get("question") or ai_question)[:160]
-            prompt_snapshot = str(obj.get("prompt") or prompt_snapshot)
-            wcag_flags = obj.get("wcag_flags") or wcag_flags
-            suggestions = obj.get("suggestions") or suggestions
-            ready = bool(obj.get("ready", False))
-            requirements_doc = obj.get("requirements_doc") or {}
-        else:
-            requirements_doc = {}
-    except Exception:
-        # Mantém valores default
-        requirements_doc = {}
+        print({"draft_event": "llm_chat_request"})
+        content = llm.chat(messages, temperature=0.3, max_tokens=600)
+        print({"draft_event": "llm_chat_response", "content_chars": len(content or "")})
+        obj = _try_parse_json(content)
+        ai_question = (obj.get("question") or "")
+        if isinstance(ai_question, str):
+            ai_question = ai_question[:160]
+        prompt_snapshot = str(obj.get("prompt") or prompt_snapshot)
+        suggestions = obj.get("suggestions") or suggestions
+        ready = bool(obj.get("ready", False))
+        print({
+            "draft_event": "llm_parsed",
+            "has_question": bool(ai_question),
+            "suggestions_count": len(suggestions) if isinstance(suggestions, list) else 0,
+        })
+    except Exception as e:
+        # Em caso de falha, registre e siga com valores vazios para não quebrar o fluxo (sem pergunta estática)
+        print({"llm_refine_parse_warning": str(e)})
+        ai_question = ""  # não exibir pergunta estática
+        suggestions = []
 
     # Atualiza sessão
     session.prompt = prompt_snapshot
@@ -139,39 +234,35 @@ def draft_iteration(payload: DraftRequest, db: Session = Depends(get_db)):
         ai_question=ai_question,
         user_answer=payload.user_answer or "",
         prompt_snapshot=prompt_snapshot,
-        wcag_flags=wcag_flags,
-        requirements_doc=requirements_doc,
+        wcag_flags=None,
+        requirements_doc=None,
         model_name=llm.settings.llm_model,
         temperature=0.3,
         duration_ms=elapsed_ms,
     )
     db.add(turn)
     db.commit()
+    print({
+        "draft_event": "turn_persisted",
+        "session_id": session.id,
+        "turn_index": payload.turn_index,
+        "duration_ms": elapsed_ms,
+    })
 
-    # Heurística de prontidão: >=3 iterações ou checklist completo
-    checklist_ok = all(bool(wcag_flags.get(k)) for k in ["alt", "label", "landmarks", "contrast", "tabindex"]) if isinstance(wcag_flags, dict) else False
-    # Cobertura mínima do documento de requisitos: ao menos 1 item em conjuntos centrais
-    def _len_ok(x):
-        return isinstance(x, list) and len(x) > 0
-    doc_ok = (
-        isinstance(requirements_doc, dict)
-        and _len_ok(requirements_doc.get("functional"))
-        and _len_ok(requirements_doc.get("non_functional"))
-        and _len_ok(requirements_doc.get("acceptance_criteria"))
-        and _len_ok(requirements_doc.get("accessibility"))
-        and _len_ok(requirements_doc.get("aria_landmarks"))
-    )
-    is_ready = ready or (session.refine_iterations or 0) >= 3 or checklist_ok or doc_ok
+    # Heurística de prontidão simplificada: sinal da LLM ou 3+ iterações
+    is_ready = ready or (session.refine_iterations or 0) >= 3
+    print({
+        "draft_event": "ready_eval",
+        "ready_model": ready,
+        "iterations": session.refine_iterations,
+        "is_ready": is_ready,
+    })
 
     return DraftResponse(
         session_id=session.id,
-        ai_question=ai_question,
-        suggestions=suggestions[:3],
+        ai_question=ai_question or "",
+        suggestions=(suggestions or [])[:3],
         prompt_snapshot=prompt_snapshot,
-        wcag_flags={
-            "wcag_flags": wcag_flags or {},
-            "requirements_doc": requirements_doc or {},
-        },
         ready=is_ready,
         model=llm.settings.llm_model,
         temperature=0.3,
@@ -181,8 +272,40 @@ def draft_iteration(payload: DraftRequest, db: Session = Depends(get_db)):
 
 @router.post("/final", response_model=SessionResponse)
 def finalize_generation(payload: FinalGenerateRequest, db: Session = Depends(get_db)):
-    # Reutiliza a lógica existente de geração
-    return generate_interface(GenerateRequest(**payload.model_dump()), db)  # type: ignore[arg-type]
+    # Finaliza geração na MESMA sessão wizard, incorporando requisitos/flags coletados
+    session = db.get(models.Session, payload.session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Sessão não encontrada")
+    if session.mode != "wizard":
+        raise HTTPException(status_code=400, detail="Finalização permitida apenas para sessões em modo 'wizard'")
+
+    # Prompt final: apenas o prompt consolidado da sessão
+    final_prompt = session.prompt or ""
+
+    start = perf_counter()
+    llm = LLMClient()
+    code = llm.generate_code(final_prompt)
+    if len(code) > 200_000:
+        code = code[:200_000]
+
+    elapsed_ms = int((perf_counter() - start) * 1000)
+
+    # Atualiza a mesma sessão
+    session.final_prompt = final_prompt
+    session.response_code = code
+    session.generation_time_ms = elapsed_ms
+    session.content_hash = hashlib.sha256(code.encode("utf-8")).hexdigest()
+
+    score, findings = run_audits(code)
+    if score is not None:
+        session.accessibility_score = score
+    if findings is not None:
+        session.wcag_findings = findings
+
+    db.add(session)
+    db.commit()
+
+    return SessionResponse(session_id=session.id, code=code, metrics=None)
 
 
 

@@ -35,6 +35,12 @@ export type SessionDetails = {
   created_at: string;
 };
 
+export type RunDetails = {
+  run_id: string;
+  direct_session: SessionDetails | null;
+  wizard_session: SessionDetails | null;
+};
+
 export type FeedbackCreate = {
   session_id: number;
   sus_score: number;
@@ -45,6 +51,7 @@ export type FeedbackCreate = {
 export type DraftRequest = {
   session_id?: number;
   participant_id?: string; // required on first turn
+  run_id?: string; // required on first turn now
   turn_index: number;
   current_prompt: string;
   user_answer?: string;
@@ -55,12 +62,13 @@ export type DraftResponse = {
   ai_question: string;
   suggestions: string[];
   prompt_snapshot: string;
-  wcag_flags: Record<string, unknown>;
   ready: boolean;
   model: string;
   temperature: number;
   duration_ms: number;
 };
+
+export type FinalizeRequest = { session_id: number };
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
@@ -101,11 +109,17 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
-  finalize: (payload: GenerateDirectRequest | GenerateWizardRequest) =>
+  startRun: (initial_prompt: string) =>
+    http<{ run_id: string; direct_session_id: number; code: string }>("/runs/start", {
+      method: "POST",
+      body: JSON.stringify({ initial_prompt }),
+    }),
+  finalize: (payload: FinalizeRequest) =>
     http<GenerateResponse>("/sessions/final", {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+  getRun: (runId: string) => http<RunDetails>(`/runs/${runId}`),
   getSession: (id: number) => http<SessionDetails>(`/sessions/${id}`),
   createFeedback: (payload: FeedbackCreate) =>
     http<{ ok: boolean }>("/feedback", {

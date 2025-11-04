@@ -10,9 +10,12 @@ def get_allowed_origins() -> list[str]:
 
 app = FastAPI(title="InterfaceGen Backend", version="0.1.0")
 
+from app.config import get_settings as _get_settings
+_settings = _get_settings()
+cors_origins = ["*"] if _settings.cors_allow_all else get_allowed_origins()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=get_allowed_origins(),
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -24,11 +27,12 @@ def health() -> dict:
     return {"status": "ok"}
 
 
-from app.routers import sessions, feedback, export, participants
+from app.routers import sessions, feedback, export, participants, runs
 app.include_router(sessions.router, prefix="/api")
 app.include_router(feedback.router, prefix="/api")
 app.include_router(export.router, prefix="/api")
 app.include_router(participants.router, prefix="/api")
+app.include_router(runs.router, prefix="/api")
 
 
 # Criação automática do schema (MVP). Para produção, usar Alembic.
@@ -43,5 +47,11 @@ def on_startup() -> None:
         conn.execute(text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS refine_iterations INTEGER"))
         conn.execute(text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS final_prompt TEXT"))
         conn.execute(text("ALTER TABLE draft_turns ADD COLUMN IF NOT EXISTS requirements_doc JSONB"))
+        conn.execute(text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS run_id UUID"))
+        # tornar participant_id opcional
+        try:
+            conn.execute(text("ALTER TABLE sessions ALTER COLUMN participant_id DROP NOT NULL"))
+        except Exception:
+            pass
 
 

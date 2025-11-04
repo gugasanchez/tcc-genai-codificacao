@@ -20,7 +20,8 @@ class Session(Base):
     __tablename__ = "sessions"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    participant_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("participants.id"), nullable=False)
+    participant_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("participants.id"), nullable=True)
+    run_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     mode: Mapped[str] = mapped_column(String(16), nullable=False)  # direct | wizard
     prompt: Mapped[str] = mapped_column(Text, nullable=False)
     response_code: Mapped[str] = mapped_column(Text, nullable=True)

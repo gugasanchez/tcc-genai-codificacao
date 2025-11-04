@@ -1,4 +1,5 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+import json
 
 
 def build_direct_prompt(user_prompt: str) -> str:
@@ -15,25 +16,20 @@ def build_wizard_prompt(answers: Dict[str, Any]) -> str:
     return "\n".join(parts)
 
 
-def build_refine_messages(current_prompt: str, last_answer: str, turn_index: int) -> List[Dict[str, str]]:
+def build_refine_messages(current_prompt: str, last_answer: str, turn_index: int, requirements_doc: Optional[Dict[str, Any]] = None) -> List[Dict[str, str]]:
     system = (
-        "Você é um Analista de Requisitos e Acessibilidade. Aplique práticas de PE4RE, ReAct curto (sem pensamentos visíveis), prompt chaining e self-critique mínima. "
-        "Elicite e consolide requisitos funcionais e não funcionais, além de uma checklist WCAG/WAI-ARIA integrada. "
-        "Responda SEMPRE em JSON estrito com os campos: "
-        "question (string, <=120 chars), suggestions (array<=3, curtas), prompt (string, rascunho atualizado), "
-        "wcag_flags (obj com alt,label,landmarks,contrast,tabindex: booleans), "
-        "requirements_doc (obj com: functional[], non_functional[{category,requirement}], acceptance_criteria[{id,text,gherkin}], accessibility[], aria_landmarks[], constraints[], risks[], ui_components[{name,props,states}], data[{entity,fields}]), "
-        "ready (bool)."
+        "Você é um Analista de Requisitos e Acessibilidade. Aplique PE4RE, prompt chaining e self-critique mínima. "
+        "Seu objetivo é refinar um prompt de geração de interface para melhorar acessibilidade (WCAG/WAI-ARIA), clareza de requisitos funcionais e não funcionais e qualidade geral. "
+        "Responda SOMENTE com um JSON válido (sem markdown/backticks), contendo os campos: "
+        "question (string, <=120 chars), suggestions (array<=3, curtas), prompt (string, rascunho atualizado), ready (bool)."
     )
     user = (
         f"Contexto atual do prompt composto:\n{current_prompt}\n\n"
         f"Última resposta do usuário: {last_answer or '-'}\n"
         f"Iteração: {turn_index + 1}. "
-        f"Faça UMA pergunta objetiva sobre lacunas críticas (funcionais, não funcionais, acessibilidade/ARIA, componentes, dados, critérios de aceitação). "
-        f"Atualize o rascunho do prompt e os arrays do requirements_doc. "
-        f"Nos acceptance_criteria, inclua itens claros (Given/When/Then). Em non_functional, categorize (ex.: performance, segurança, usabilidade, acessibilidade). "
-        f"Em ui_components, detalhe estados e props relevantes. Em data, especifique entidades e campos. "
-        f"Se já houver cobertura mínima em todas as seções e wcag_flags completos, defina ready=true."
+        f"Faça UMA pergunta objetiva para reduzir ambiguidade e cobrir aspectos críticos de requisitos (funcionais/não funcionais) e acessibilidade (WCAG/ARIA). "
+        f"Atualize o rascunho do prompt incorporando a resposta do usuário e explicitando requisitos e práticas de acessibilidade quando necessário. "
+        f"Se o rascunho já estiver claro e suficiente para uma boa geração acessível, defina ready=true."
     )
     return [
         {"role": "system", "content": system},

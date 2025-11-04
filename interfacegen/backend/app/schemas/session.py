@@ -6,7 +6,7 @@ Mode = Literal["direct", "wizard"]
 
 
 class GenerateRequest(BaseModel):
-    participant_id: str
+    participant_id: Optional[str] = None
     mode: Mode
     prompt: Optional[str] = None
     wizard_answers: Optional[Dict[str, Any]] = None
@@ -19,9 +19,10 @@ class SessionResponse(BaseModel):
 
 
 class DraftRequest(BaseModel):
-    # Se session_id ausente, criar nova sessão em modo wizard
+    # Se session_id ausente, criar nova sessão em modo wizard; usar run_id para agrupar
     session_id: Optional[int] = None
     participant_id: Optional[str] = None
+    run_id: Optional[str] = None
     turn_index: int
     current_prompt: str
     user_answer: Optional[str] = ""
@@ -32,7 +33,6 @@ class DraftResponse(BaseModel):
     ai_question: str
     suggestions: list[str]
     prompt_snapshot: str
-    wcag_flags: Dict[str, Any]
     ready: bool
     model: str
     temperature: float
@@ -40,8 +40,6 @@ class DraftResponse(BaseModel):
 
 
 class FinalGenerateRequest(BaseModel):
-    participant_id: str
-    mode: Mode
-    prompt: Optional[str] = None
-    wizard_answers: Optional[Dict[str, Any]] = None
+    # Finaliza a geração para uma sessão wizard existente
+    session_id: int
 
