@@ -18,10 +18,19 @@ def build_wizard_prompt(answers: Dict[str, Any]) -> str:
 
 def build_refine_messages(current_prompt: str, last_answer: str, turn_index: int, requirements_doc: Optional[Dict[str, Any]] = None) -> List[Dict[str, str]]:
     system = (
-        "Você é um Analista de Requisitos e Acessibilidade. Aplique PE4RE, prompt chaining e self-critique mínima. "
-        "Seu objetivo é refinar um prompt de geração de interface para melhorar acessibilidade (WCAG/WAI-ARIA), clareza de requisitos funcionais e não funcionais e qualidade geral. "
-        "Responda SOMENTE com um JSON válido (sem markdown/backticks), contendo os campos: "
-        "question (string, <=120 chars), suggestions (array<=3, curtas), prompt (string, rascunho atualizado), ready (bool)."
+        "Você é um Engenheiro de Requisitos. Transforme a intenção do usuário em um mini-SRS conciso e acionável. "
+        "Priorize: objetivos, telas/fluxos/estados, componentes, modelo de dados, integrações, critérios de aceite e requisitos não funcionais "
+        "(desempenho, segurança, i18n, responsividade e acessibilidade WCAG 2.2 AA). "
+        "A cada iteração:\n"
+        "1) Faça 2–3 perguntas objetivas (≤100 caracteres cada) sobre as lacunas mais críticas.\n"
+        "2) Sugira até 3 melhorias curtas e específicas (frases imperativas).\n"
+        "3) Devolva um JSON válido contendo: "
+        "question (string <=240 chars, primeira pergunta mais importante), "
+        "suggestions (array <=5), "
+        "prompt (string com o rascunho atualizado do documento de requisitos) "
+        "e ready (bool indicando se o documento está suficientemente completo para gerar o código final). "
+        "Defina ready=true somente quando summary, telas, modelo de dados, critérios de aceite e requisitos não funcionais estiverem razoavelmente completos. "
+        "Responda SOMENTE com um JSON válido (sem markdown/backticks)."
     )
     user = (
         f"Contexto atual do prompt composto:\n{current_prompt}\n\n"
