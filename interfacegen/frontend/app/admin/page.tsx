@@ -78,7 +78,6 @@ export default function AdminPage() {
                     <th>Participante</th>
                     <th>Modo</th>
                     <th>Tempo (ms)</th>
-                    <th>Acessibilidade</th>
                     <th>Criada</th>
                     <th></th>
                   </tr>
@@ -164,11 +163,6 @@ export default function AdminPage() {
                                         ms
                                       </li>
                                       <li>
-                                        Acessibilidade:{" "}
-                                        {(expanded[s.id] as SessionDetails)
-                                          .accessibility_score ?? "-"}
-                                      </li>
-                                      <li>
                                         Criada:{" "}
                                         {new Date(
                                           (
@@ -177,19 +171,6 @@ export default function AdminPage() {
                                         ).toLocaleString()}
                                       </li>
                                     </ul>
-                                  </div>
-                                  <div>
-                                    <div className="text-sm font-medium text-zinc-800">
-                                      WCAG findings (JSON)
-                                    </div>
-                                    <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded bg-white p-3 text-xs text-zinc-800 border">
-                                      {JSON.stringify(
-                                        (expanded[s.id] as SessionDetails)
-                                          .wcag_findings,
-                                        null,
-                                        2
-                                      )}
-                                    </pre>
                                   </div>
                                   <div className="md:col-span-2">
                                     <div className="text-sm font-medium text-zinc-800">
