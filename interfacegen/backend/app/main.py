@@ -48,6 +48,9 @@ def on_startup() -> None:
         conn.execute(text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS final_prompt TEXT"))
         conn.execute(text("ALTER TABLE draft_turns ADD COLUMN IF NOT EXISTS requirements_doc JSONB"))
         conn.execute(text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS run_id UUID"))
+        # Client-side measured time fields
+        conn.execute(text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS pre_wizard_time_ms INTEGER"))
+        conn.execute(text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS wizard_phase_time_ms INTEGER"))
         # tornar participant_id opcional
         try:
             conn.execute(text("ALTER TABLE sessions ALTER COLUMN participant_id DROP NOT NULL"))

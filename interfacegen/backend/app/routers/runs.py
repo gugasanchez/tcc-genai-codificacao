@@ -16,6 +16,8 @@ def start_run(payload: dict, db: Session = Depends(get_db)):
     initial_prompt = (payload.get("initial_prompt") or "").strip()
     if not initial_prompt:
         raise HTTPException(status_code=400, detail="initial_prompt é obrigatório")
+    # Optional client-side measured time from home to wizard navigation
+    pre_wizard_time_ms = payload.get("pre_wizard_time_ms")
 
     run_id = uuid.uuid4()
     start = perf_counter()
@@ -37,6 +39,8 @@ def start_run(payload: dict, db: Session = Depends(get_db)):
 
     elapsed_ms = int((perf_counter() - start) * 1000)
     session.generation_time_ms = elapsed_ms
+    if isinstance(pre_wizard_time_ms, int):
+        session.pre_wizard_time_ms = pre_wizard_time_ms
     session.content_hash = hashlib.sha256(code.encode("utf-8")).hexdigest()
     db.add(session)
     db.commit()
@@ -74,6 +78,8 @@ def get_run(run_id: str, db: Session = Depends(get_db)):
             "prompt": s.prompt,
             "response_code": s.response_code,
             "generation_time_ms": s.generation_time_ms,
+            "pre_wizard_time_ms": s.pre_wizard_time_ms,
+            "wizard_phase_time_ms": s.wizard_phase_time_ms,
             "accessibility_score": s.accessibility_score,
             "wcag_findings": s.wcag_findings,
             "created_at": s.created_at.isoformat(),

@@ -287,6 +287,9 @@ def finalize_generation(payload: FinalGenerateRequest, db: Session = Depends(get
     session.final_prompt = final_prompt
     session.response_code = code
     session.generation_time_ms = elapsed_ms
+    # Optional client-side measured wizard time
+    if payload.wizard_phase_time_ms is not None:
+        session.wizard_phase_time_ms = payload.wizard_phase_time_ms
     session.content_hash = hashlib.sha256(code.encode("utf-8")).hexdigest()
 
     db.add(session)
@@ -308,6 +311,8 @@ def get_session(session_id: int, db: Session = Depends(get_db)):
         "prompt": s.prompt,
         "response_code": s.response_code,
         "generation_time_ms": s.generation_time_ms,
+        "pre_wizard_time_ms": s.pre_wizard_time_ms,
+        "wizard_phase_time_ms": s.wizard_phase_time_ms,
         "accessibility_score": s.accessibility_score,
         "wcag_findings": s.wcag_findings,
         "created_at": s.created_at.isoformat(),

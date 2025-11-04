@@ -42,4 +42,5 @@ class DraftResponse(BaseModel):
 class FinalGenerateRequest(BaseModel):
     # Finaliza a geração para uma sessão wizard existente
     session_id: int
+    wizard_phase_time_ms: Optional[int] = None
 

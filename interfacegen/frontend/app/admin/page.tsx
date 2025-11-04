@@ -163,6 +163,18 @@ export default function AdminPage() {
                                         ms
                                       </li>
                                       <li>
+                                        Pré-wizard:{" "}
+                                        {(expanded[s.id] as any)
+                                          .pre_wizard_time_ms ?? "-"}{" "}
+                                        ms
+                                      </li>
+                                      <li>
+                                        Wizard:{" "}
+                                        {(expanded[s.id] as any)
+                                          .wizard_phase_time_ms ?? "-"}{" "}
+                                        ms
+                                      </li>
+                                      <li>
                                         Criada:{" "}
                                         {new Date(
                                           (

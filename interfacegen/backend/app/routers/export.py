@@ -19,6 +19,8 @@ def export_json(db: Session = Depends(get_db)):
             "participant_id": str(s.participant_id),
             "mode": s.mode,
             "generation_time_ms": s.generation_time_ms,
+            "pre_wizard_time_ms": s.pre_wizard_time_ms,
+            "wizard_phase_time_ms": s.wizard_phase_time_ms,
             "accessibility_score": s.accessibility_score,
             "created_at": s.created_at.isoformat(),
             "feedback": (
@@ -49,6 +51,8 @@ def export_csv(db: Session = Depends(get_db)):
         "participant_id",
         "mode",
         "generation_time_ms",
+        "pre_wizard_time_ms",
+        "wizard_phase_time_ms",
         "accessibility_score",
         "created_at",
         # feedback sums
@@ -74,6 +78,8 @@ def export_csv(db: Session = Depends(get_db)):
             str(s.participant_id),
             s.mode,
             s.generation_time_ms or "",
+            s.pre_wizard_time_ms or "",
+            s.wizard_phase_time_ms or "",
             s.accessibility_score or "",
             s.created_at.isoformat(),
             getattr(f, "usability_score", "") or "",

@@ -8,6 +8,8 @@ export default function Home() {
   const router = useRouter();
   const [initialPrompt, setInitialPrompt] = useState("");
   const [starting, setStarting] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [preStartAt, setPreStartAt] = useState<number | null>(null);
 
   const startExperiment = useCallback(async () => {
     if (!initialPrompt.trim()) {
@@ -16,7 +18,11 @@ export default function Home() {
     }
     try {
       setStarting(true);
-      const res = await api.startRun(initialPrompt);
+      const elapsed = preStartAt ? Date.now() - preStartAt : undefined;
+      const res = await api.startRun(
+        initialPrompt,
+        typeof elapsed === "number" ? elapsed : undefined
+      );
       const seed = encodeURIComponent(initialPrompt);
       router.push(
         `/wizard?runId=${res.run_id}&directId=${res.direct_session_id}&seed=${seed}`
@@ -26,7 +32,12 @@ export default function Home() {
     } finally {
       setStarting(false);
     }
-  }, [initialPrompt, router]);
+  }, [initialPrompt, router, preStartAt]);
+
+  const revealPrompt = useCallback(() => {
+    setShowPrompt(true);
+    setPreStartAt(Date.now());
+  }, []);
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
@@ -56,26 +67,41 @@ export default function Home() {
           aria-busy={starting}
         >
           <h2 className="text-xl font-medium">Iniciar experimento</h2>
-          <p className="mt-2 text-sm text-zinc-600">
-            Descreva o prompt inicial. Ele gerará a interface do modo Direto e
-            servirá de base para o Wizard Guiado.
-          </p>
-          <textarea
-            className="mt-4 h-40 w-full rounded-md border p-3 outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Ex.: Landing page com herói, CTA e formulário acessível"
-            value={initialPrompt}
-            onChange={(e) => setInitialPrompt(e.target.value)}
-            disabled={starting}
-          />
-          <div className="mt-4 flex gap-3">
-            <button
-              className="rounded-md bg-zinc-900 px-4 py-2 text-white disabled:opacity-50"
-              onClick={startExperiment}
-              disabled={starting}
-            >
-              {starting ? "Iniciando..." : "Iniciar trilha"}
-            </button>
-          </div>
+          {!showPrompt && (
+            <div className="mt-3">
+              <button
+                className="rounded-md bg-zinc-900 px-4 py-2 text-white disabled:opacity-50"
+                onClick={revealPrompt}
+                disabled={starting}
+              >
+                Iniciar experimento
+              </button>
+            </div>
+          )}
+          {showPrompt && (
+            <div className="mt-3">
+              <p className="text-sm text-zinc-600">
+                Descreva o prompt inicial. Ele gerará a interface do modo Direto
+                e servirá de base para o Wizard Guiado.
+              </p>
+              <textarea
+                className="mt-4 h-40 w-full rounded-md border p-3 outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Ex.: Landing page com herói, CTA e formulário acessível"
+                value={initialPrompt}
+                onChange={(e) => setInitialPrompt(e.target.value)}
+                disabled={starting}
+              />
+              <div className="mt-4 flex gap-3">
+                <button
+                  className="rounded-md bg-zinc-900 px-4 py-2 text-white disabled:opacity-50"
+                  onClick={startExperiment}
+                  disabled={starting}
+                >
+                  {starting ? "Iniciando..." : "Iniciar trilha"}
+                </button>
+              </div>
+            </div>
+          )}
         </section>
 
         <section className="mt-8 flex items-center justify-between">

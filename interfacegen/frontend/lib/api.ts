@@ -30,6 +30,8 @@ export type SessionDetails = {
   prompt: string;
   response_code: string;
   generation_time_ms: number | null;
+  pre_wizard_time_ms?: number | null;
+  wizard_phase_time_ms?: number | null;
   accessibility_score: number | null;
   wcag_findings: unknown | null;
   created_at: string;
@@ -71,7 +73,7 @@ export type DraftResponse = {
   duration_ms: number;
 };
 
-export type FinalizeRequest = { session_id: number };
+export type FinalizeRequest = { session_id: number; wizard_phase_time_ms?: number };
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ||
@@ -112,10 +114,10 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
-  startRun: (initial_prompt: string) =>
+  startRun: (initial_prompt: string, pre_wizard_time_ms?: number) =>
     http<{ run_id: string; direct_session_id: number; code: string }>("/runs/start", {
       method: "POST",
-      body: JSON.stringify({ initial_prompt }),
+      body: JSON.stringify({ initial_prompt, ...(typeof pre_wizard_time_ms === "number" ? { pre_wizard_time_ms } : {}) }),
     }),
   finalize: (payload: FinalizeRequest) =>
     http<GenerateResponse>("/sessions/final", {

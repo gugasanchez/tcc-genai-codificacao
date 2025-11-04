@@ -138,6 +138,14 @@ function ResultsContent() {
               <strong>{data!.generation_time_ms ?? "-"} ms</strong>
             </li>
             <li>
+              Pré-wizard:{" "}
+              <strong>{(data as any).pre_wizard_time_ms ?? "-"} ms</strong>
+            </li>
+            <li>
+              Wizard:{" "}
+              <strong>{(data as any).wizard_phase_time_ms ?? "-"} ms</strong>
+            </li>
+            <li>
               Acessibilidade (0–100):{" "}
               <strong>{data!.accessibility_score ?? "-"}</strong>
             </li>

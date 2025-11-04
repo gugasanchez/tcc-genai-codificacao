@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Suspense, useCallback, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { getParticipantId } from "../../lib/storage";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -41,12 +41,18 @@ function WizardPageContent() {
   // Fluxo simplificado: sem exibir WCAG/requirements
   const [readyFlag, setReadyFlag] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [wizardStartAt, setWizardStartAt] = useState<number | null>(null);
 
   const turnsRef = useRef<
     Array<{ aiQuestion: string; userAnswer: string; promptSnapshot: string }>
   >([]);
 
   const participantId = useMemo(() => getParticipantId(), []);
+
+  useEffect(() => {
+    // Start wizard timing when the page is mounted
+    setWizardStartAt(Date.now());
+  }, []);
 
   const startRefine = useCallback(async () => {
     if (!participantId) {
@@ -121,7 +127,8 @@ function WizardPageContent() {
     if (!sessionId) return;
     setState("generating");
     try {
-      const res = await api.finalize({ session_id: sessionId });
+      const elapsed = wizardStartAt ? Date.now() - wizardStartAt : undefined;
+      const res = await api.finalize({ session_id: sessionId, ...(typeof elapsed === "number" ? { wizard_phase_time_ms: elapsed } : {}) });
       if (runId) {
         router.push(`/results-compare?runId=${runId}`);
       } else if (directId) {
@@ -136,7 +143,7 @@ function WizardPageContent() {
       alert((e as Error).message);
       setState("finalPreview");
     }
-  }, [sessionId, router, directId, runId]);
+  }, [sessionId, router, directId, runId, wizardStartAt]);
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">

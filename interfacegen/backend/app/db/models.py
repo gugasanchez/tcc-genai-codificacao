@@ -26,6 +26,9 @@ class Session(Base):
     prompt: Mapped[str] = mapped_column(Text, nullable=False)
     response_code: Mapped[str] = mapped_column(Text, nullable=True)
     generation_time_ms: Mapped[int] = mapped_column(Integer, nullable=True)
+    # Client-side measured times
+    pre_wizard_time_ms: Mapped[int] = mapped_column(Integer, nullable=True)
+    wizard_phase_time_ms: Mapped[int] = mapped_column(Integer, nullable=True)
     accessibility_score: Mapped[int] = mapped_column(Integer, nullable=True)
     wcag_findings: Mapped[dict] = mapped_column(JSONB, nullable=True)
     content_hash: Mapped[str] = mapped_column(String(64), nullable=True)
