@@ -200,7 +200,7 @@ def draft_iteration(payload: DraftRequest, db: Session = Depends(get_db)):
 
     try:
         print({"draft_event": "llm_chat_request"})
-        content = llm.chat(messages, temperature=0.3, max_tokens=600)
+        content = llm.chat(messages, temperature=0.7, max_tokens=600)
         print({"draft_event": "llm_chat_response", "content_chars": len(content or "")})
         obj = _try_parse_json(content)
         ai_question = (obj.get("question") or "")
@@ -237,7 +237,7 @@ def draft_iteration(payload: DraftRequest, db: Session = Depends(get_db)):
         wcag_flags=None,
         requirements_doc=None,
         model_name=llm.settings.llm_model,
-        temperature=0.3,
+        temperature=0.7,
         duration_ms=elapsed_ms,
     )
     db.add(turn)
@@ -265,7 +265,7 @@ def draft_iteration(payload: DraftRequest, db: Session = Depends(get_db)):
         prompt_snapshot=prompt_snapshot,
         ready=is_ready,
         model=llm.settings.llm_model,
-        temperature=0.3,
+        temperature=0.7,
         duration_ms=elapsed_ms,
     )
 
