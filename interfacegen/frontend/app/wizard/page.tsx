@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useMemo, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { getParticipantId } from "../../lib/storage";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -16,6 +16,14 @@ type WizardState =
 const MAX_TURNS = 5;
 
 export default function WizardPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-zinc-700">Carregando...</div>}>
+      <WizardPageContent />
+    </Suspense>
+  );
+}
+
+function WizardPageContent() {
   const router = useRouter();
   const params = useSearchParams();
   const runId = params.get("runId") || undefined;

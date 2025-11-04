@@ -1,7 +1,16 @@
 "use client";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function ResultsMenuPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-zinc-700">Carregando...</div>}>
+      <ResultsMenuContent />
+    </Suspense>
+  );
+}
+
+function ResultsMenuContent() {
   const params = useSearchParams();
   const directId = params.get("directId");
   const wizardId = params.get("wizardId");

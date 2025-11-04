@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { api, SessionDetails } from "../../lib/api";
@@ -8,6 +8,14 @@ import { Loader } from "../../components/Loader";
 import { FeedbackForm } from "../../components/FeedbackForm";
 
 export default function ResultsPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-zinc-700">Carregando...</div>}>
+      <ResultsContent />
+    </Suspense>
+  );
+}
+
+function ResultsContent() {
   const params = useSearchParams();
   const sessionId = useMemo(() => Number(params.get("sessionId")), [params]);
   const view = useMemo(() => params.get("view") || "preview", [params]);

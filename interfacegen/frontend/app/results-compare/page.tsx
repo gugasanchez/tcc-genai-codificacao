@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { api, RunDetails } from "../../lib/api";
@@ -7,6 +7,14 @@ import { CodePreview } from "../../components/CodePreview";
 import { FeedbackForm } from "../../components/FeedbackForm";
 
 export default function ResultsComparePage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-zinc-700">Carregando...</div>}>
+      <ResultsCompareContent />
+    </Suspense>
+  );
+}
+
+function ResultsCompareContent() {
   const params = useSearchParams();
   const runId = useMemo(() => params.get("runId") || "", [params]);
   const [data, setData] = useState<RunDetails | null>(null);
