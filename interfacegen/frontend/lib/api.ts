@@ -43,8 +43,11 @@ export type RunDetails = {
 
 export type FeedbackCreate = {
   session_id: number;
-  sus_score: number;
-  nasa_tlx_load: number;
+  answers: {
+    usability: number[]; // length 5
+    cognitive_load: number[]; // length 5
+    perceived_quality: number[]; // length 5
+  };
   comments?: string;
 };
 

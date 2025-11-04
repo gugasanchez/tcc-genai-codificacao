@@ -84,119 +84,210 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sessions.map((s) => (
-                    <>
-                      <tr key={s.id} className="border-b last:border-0">
-                        <td className="py-2">{s.id}</td>
-                        <td className="font-mono text-xs text-zinc-700">
-                          {s.participant_id}
-                        </td>
-                        <td>{s.mode}</td>
-                        <td>{s.generation_time_ms ?? "-"}</td>
-                        <td>{s.accessibility_score ?? "-"}</td>
-                        <td className="text-zinc-600">
-                          {new Date(s.created_at).toLocaleString()}
-                        </td>
-                        <td>
-                          <button
-                            className="rounded-md border px-2 py-1 text-xs"
-                            onClick={() => toggleExpand(s.id)}
-                          >
-                            {expanded[s.id] ? "Fechar" : "Ver detalhes"}
-                          </button>
-                        </td>
-                      </tr>
-                      {expanded[s.id] && (
-                        <tr className="bg-zinc-50">
-                          <td colSpan={7} className="p-4">
-                            {expanded[s.id] === "loading" && (
-                              <div className="text-xs text-zinc-600">
-                                Carregando detalhes...
-                              </div>
-                            )}
-                            {expanded[s.id] === "error" && (
-                              <div className="text-xs text-red-700">
-                                Falha ao carregar detalhes.
-                              </div>
-                            )}
-                            {typeof expanded[s.id] === "object" && (
-                              <div className="grid gap-4 md:grid-cols-2">
-                                <div>
-                                  <div className="text-sm font-medium text-zinc-800">
-                                    Prompt
-                                  </div>
-                                  <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded bg-white p-3 text-xs text-zinc-800 border">
-                                    {(expanded[s.id] as SessionDetails).prompt}
-                                  </pre>
-                                </div>
-                                <div>
-                                  <div className="text-sm font-medium text-zinc-800">
-                                    Código (preview)
-                                  </div>
-                                  <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded bg-white p-3 text-xs text-zinc-800 border">
-                                    {(
-                                      (expanded[s.id] as SessionDetails)
-                                        .response_code || ""
-                                    ).slice(0, 3000)}
-                                  </pre>
-                                </div>
-                                <div>
-                                  <div className="text-sm font-medium text-zinc-800">
-                                    Métricas
-                                  </div>
-                                  <ul className="mt-2 space-y-1 text-xs text-zinc-700">
-                                    <li>
-                                      Tempo:{" "}
-                                      {(expanded[s.id] as SessionDetails)
-                                        .generation_time_ms ?? "-"}{" "}
-                                      ms
-                                    </li>
-                                    <li>
-                                      Acessibilidade:{" "}
-                                      {(expanded[s.id] as SessionDetails)
-                                        .accessibility_score ?? "-"}
-                                    </li>
-                                    <li>
-                                      Criada:{" "}
-                                      {new Date(
-                                        (
-                                          expanded[s.id] as SessionDetails
-                                        ).created_at
-                                      ).toLocaleString()}
-                                    </li>
-                                  </ul>
-                                </div>
-                                <div>
-                                  <div className="text-sm font-medium text-zinc-800">
-                                    WCAG findings (JSON)
-                                  </div>
-                                  <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded bg-white p-3 text-xs text-zinc-800 border">
-                                    {JSON.stringify(
-                                      (expanded[s.id] as SessionDetails)
-                                        .wcag_findings,
-                                      null,
-                                      2
-                                    )}
-                                  </pre>
-                                </div>
-                                <div className="md:col-span-2">
-                                  <a
-                                    className="text-xs text-blue-700 underline"
-                                    href={`/results?sessionId=${
-                                      (expanded[s.id] as SessionDetails).id
-                                    }&view=preview`}
-                                    target="_blank"
-                                  >
-                                    Abrir preview em nova aba
-                                  </a>
-                                </div>
-                              </div>
-                            )}
+                  {sessions.map((s) => {
+                    const fb: any = (s as any).feedback || null;
+                    const u = fb?.answers?.usability as number[] | undefined;
+                    const c = fb?.answers?.cognitive_load as
+                      | number[]
+                      | undefined;
+                    const q = fb?.answers?.perceived_quality as
+                      | number[]
+                      | undefined;
+                    return (
+                      <>
+                        <tr key={s.id} className="border-b last:border-0">
+                          <td className="py-2">{s.id}</td>
+                          <td className="font-mono text-xs text-zinc-700">
+                            {s.participant_id}
+                          </td>
+                          <td>{s.mode}</td>
+                          <td>{s.generation_time_ms ?? "-"}</td>
+                          <td>{s.accessibility_score ?? "-"}</td>
+                          <td className="text-zinc-600">
+                            {new Date(s.created_at).toLocaleString()}
+                          </td>
+                          <td>
+                            <button
+                              className="rounded-md border px-2 py-1 text-xs"
+                              onClick={() => toggleExpand(s.id)}
+                            >
+                              {expanded[s.id] ? "Fechar" : "Ver detalhes"}
+                            </button>
                           </td>
                         </tr>
-                      )}
-                    </>
-                  ))}
+                        {expanded[s.id] && (
+                          <tr className="bg-zinc-50">
+                            <td colSpan={7} className="p-4">
+                              {expanded[s.id] === "loading" && (
+                                <div className="text-xs text-zinc-600">
+                                  Carregando detalhes...
+                                </div>
+                              )}
+                              {expanded[s.id] === "error" && (
+                                <div className="text-xs text-red-700">
+                                  Falha ao carregar detalhes.
+                                </div>
+                              )}
+                              {typeof expanded[s.id] === "object" && (
+                                <div className="grid gap-4 md:grid-cols-2">
+                                  <div>
+                                    <div className="text-sm font-medium text-zinc-800">
+                                      Prompt
+                                    </div>
+                                    <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded bg-white p-3 text-xs text-zinc-800 border">
+                                      {
+                                        (expanded[s.id] as SessionDetails)
+                                          .prompt
+                                      }
+                                    </pre>
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-medium text-zinc-800">
+                                      Código (preview)
+                                    </div>
+                                    <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded bg-white p-3 text-xs text-zinc-800 border">
+                                      {(
+                                        (expanded[s.id] as SessionDetails)
+                                          .response_code || ""
+                                      ).slice(0, 3000)}
+                                    </pre>
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-medium text-zinc-800">
+                                      Métricas
+                                    </div>
+                                    <ul className="mt-2 space-y-1 text-xs text-zinc-700">
+                                      <li>
+                                        Tempo:{" "}
+                                        {(expanded[s.id] as SessionDetails)
+                                          .generation_time_ms ?? "-"}{" "}
+                                        ms
+                                      </li>
+                                      <li>
+                                        Acessibilidade:{" "}
+                                        {(expanded[s.id] as SessionDetails)
+                                          .accessibility_score ?? "-"}
+                                      </li>
+                                      <li>
+                                        Criada:{" "}
+                                        {new Date(
+                                          (
+                                            expanded[s.id] as SessionDetails
+                                          ).created_at
+                                        ).toLocaleString()}
+                                      </li>
+                                    </ul>
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-medium text-zinc-800">
+                                      WCAG findings (JSON)
+                                    </div>
+                                    <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded bg-white p-3 text-xs text-zinc-800 border">
+                                      {JSON.stringify(
+                                        (expanded[s.id] as SessionDetails)
+                                          .wcag_findings,
+                                        null,
+                                        2
+                                      )}
+                                    </pre>
+                                  </div>
+                                  <div className="md:col-span-2">
+                                    <div className="text-sm font-medium text-zinc-800">
+                                      Feedback (Likert)
+                                    </div>
+                                    {!fb && (
+                                      <div className="mt-2 text-xs text-zinc-600">
+                                        Sem feedback registrado.
+                                      </div>
+                                    )}
+                                    {fb && (
+                                      <div className="mt-2 grid gap-4 md:grid-cols-3">
+                                        <div className="rounded border bg-white p-3">
+                                          <div className="text-xs font-medium text-zinc-700">
+                                            Usabilidade — Soma:{" "}
+                                            {fb.usability_score ?? "-"}
+                                          </div>
+                                          <div className="mt-2 flex flex-wrap gap-1 text-xs">
+                                            {(u || []).map((n, i) => (
+                                              <span
+                                                key={i}
+                                                className="rounded border px-2 py-0.5"
+                                              >
+                                                U{i + 1}: {n}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                        <div className="rounded border bg-white p-3">
+                                          <div className="text-xs font-medium text-zinc-700">
+                                            Carga Cognitiva — Soma:{" "}
+                                            {fb.cognitive_score ?? "-"}
+                                          </div>
+                                          <div className="mt-2 flex flex-wrap gap-1 text-xs">
+                                            {(c || []).map((n, i) => (
+                                              <span
+                                                key={i}
+                                                className="rounded border px-2 py-0.5"
+                                              >
+                                                C{i + 1}: {n}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                        <div className="rounded border bg-white p-3">
+                                          <div className="text-xs font-medium text-zinc-700">
+                                            Qualidade Percebida — Soma:{" "}
+                                            {fb.quality_score ?? "-"}
+                                          </div>
+                                          <div className="mt-2 flex flex-wrap gap-1 text-xs">
+                                            {(q || []).map((n, i) => (
+                                              <span
+                                                key={i}
+                                                className="rounded border px-2 py-0.5"
+                                              >
+                                                Q{i + 1}: {n}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                        <div className="md:col-span-3">
+                                          <div className="text-xs text-zinc-700">
+                                            Geral (média das somas):{" "}
+                                            {fb.overall_score ?? "-"}
+                                          </div>
+                                          {fb.comments && (
+                                            <div className="mt-2">
+                                              <div className="text-xs font-medium text-zinc-700">
+                                                Comentários
+                                              </div>
+                                              <div className="mt-1 whitespace-pre-wrap rounded border bg-white p-2 text-xs">
+                                                {fb.comments}
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="md:col-span-2">
+                                    <a
+                                      className="text-xs text-blue-700 underline"
+                                      href={`/results?sessionId=${
+                                        (expanded[s.id] as SessionDetails).id
+                                      }&view=preview`}
+                                      target="_blank"
+                                    >
+                                      Abrir preview em nova aba
+                                    </a>
+                                  </div>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

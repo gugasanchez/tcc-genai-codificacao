@@ -97,12 +97,16 @@ export default function ResultsPage() {
               teclado.
             </li>
             <li>
-              <strong>Usabilidade (SUS)</strong>: informe sua percepção geral de
-              facilidade de uso da interface gerada.
+              <strong>Usabilidade</strong>: avalie 5 afirmações em escala 1–5
+              sobre clareza, controle e satisfação geral.
             </li>
             <li>
-              <strong>Carga de trabalho (NASA‑TLX)</strong>: avalie o esforço
-              percebido para compreender e usar a interface.
+              <strong>Carga Cognitiva</strong>: avalie 5 afirmações sobre
+              esforço mental, sobrecarga e foco.
+            </li>
+            <li>
+              <strong>Qualidade Percebida do Código</strong>: avalie 5
+              afirmações sobre utilidade, consistência e confiabilidade.
             </li>
             <li>
               <strong>Comentários</strong>: registre problemas, pontos positivos

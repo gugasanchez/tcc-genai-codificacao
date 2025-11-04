@@ -53,5 +53,11 @@ def on_startup() -> None:
             conn.execute(text("ALTER TABLE sessions ALTER COLUMN participant_id DROP NOT NULL"))
         except Exception:
             pass
+        # Feedback: novos campos para questionário Likert
+        conn.execute(text("ALTER TABLE feedbacks ADD COLUMN IF NOT EXISTS answers JSONB"))
+        conn.execute(text("ALTER TABLE feedbacks ADD COLUMN IF NOT EXISTS usability_score INTEGER"))
+        conn.execute(text("ALTER TABLE feedbacks ADD COLUMN IF NOT EXISTS cognitive_score INTEGER"))
+        conn.execute(text("ALTER TABLE feedbacks ADD COLUMN IF NOT EXISTS quality_score INTEGER"))
+        conn.execute(text("ALTER TABLE feedbacks ADD COLUMN IF NOT EXISTS overall_score INTEGER"))
 
 

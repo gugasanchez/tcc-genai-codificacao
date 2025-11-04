@@ -24,11 +24,27 @@ def create_feedback(payload: FeedbackCreate, db: Session = Depends(get_db)):
             db.query(models.Session).filter(models.Session.run_id == session.run_id).update({models.Session.participant_id: new_pid})
         else:
             session.participant_id = new_pid
+    # Calcula escores por dimensão (carga cognitiva sem inversão — perguntas já positivas)
+    u = payload.answers.usability
+    c_raw = payload.answers.cognitive_load
+    q = payload.answers.perceived_quality
+    u_sum = sum(u)
+    c_sum = sum(c_raw)
+    q_sum = sum(q)
+    overall = round((u_sum + c_sum + q_sum) / 3)
+
     fb = models.Feedback(
         session_id=payload.session_id,
-        sus_score=payload.sus_score,
-        nasa_tlx_load=payload.nasa_tlx_load,
         comments=payload.comments,
+        answers={
+            "usability": u,
+            "cognitive_load": c_raw,
+            "perceived_quality": q,
+        },
+        usability_score=u_sum,
+        cognitive_score=c_sum,
+        quality_score=q_sum,
+        overall_score=overall,
     )
     db.add(fb)
     db.commit()

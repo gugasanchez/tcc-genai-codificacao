@@ -62,6 +62,12 @@ class Feedback(Base):
     sus_score: Mapped[int] = mapped_column(Integer, nullable=True)
     nasa_tlx_load: Mapped[int] = mapped_column(Integer, nullable=True)
     comments: Mapped[str] = mapped_column(Text, nullable=True)
+    # New Likert-based feedback fields
+    answers: Mapped[dict] = mapped_column(JSONB, nullable=True)
+    usability_score: Mapped[int] = mapped_column(Integer, nullable=True)
+    cognitive_score: Mapped[int] = mapped_column(Integer, nullable=True)
+    quality_score: Mapped[int] = mapped_column(Integer, nullable=True)
+    overall_score: Mapped[int] = mapped_column(Integer, nullable=True)
 
     session = relationship("Session", back_populates="feedback")
 
