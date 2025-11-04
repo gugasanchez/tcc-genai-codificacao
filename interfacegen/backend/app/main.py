@@ -42,5 +42,6 @@ def on_startup() -> None:
     with engine.begin() as conn:
         conn.execute(text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS refine_iterations INTEGER"))
         conn.execute(text("ALTER TABLE sessions ADD COLUMN IF NOT EXISTS final_prompt TEXT"))
+        conn.execute(text("ALTER TABLE draft_turns ADD COLUMN IF NOT EXISTS requirements_doc JSONB"))
 
 

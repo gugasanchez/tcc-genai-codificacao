@@ -22,7 +22,7 @@ def build_refine_messages(current_prompt: str, last_answer: str, turn_index: int
         "Responda SEMPRE em JSON estrito com os campos: "
         "question (string, <=120 chars), suggestions (array<=3, curtas), prompt (string, rascunho atualizado), "
         "wcag_flags (obj com alt,label,landmarks,contrast,tabindex: booleans), "
-        "requirements_doc (obj com: functional[], non_functional[], acceptance_criteria[], accessibility[], aria_landmarks[], constraints[], risks[], ui_components[], data[]), "
+        "requirements_doc (obj com: functional[], non_functional[{category,requirement}], acceptance_criteria[{id,text,gherkin}], accessibility[], aria_landmarks[], constraints[], risks[], ui_components[{name,props,states}], data[{entity,fields}]), "
         "ready (bool)."
     )
     user = (
@@ -30,7 +30,10 @@ def build_refine_messages(current_prompt: str, last_answer: str, turn_index: int
         f"Última resposta do usuário: {last_answer or '-'}\n"
         f"Iteração: {turn_index + 1}. "
         f"Faça UMA pergunta objetiva sobre lacunas críticas (funcionais, não funcionais, acessibilidade/ARIA, componentes, dados, critérios de aceitação). "
-        f"Atualize o rascunho do prompt e os arrays do requirements_doc. Se já houver cobertura mínima em todas as seções e wcag_flags completos, defina ready=true."
+        f"Atualize o rascunho do prompt e os arrays do requirements_doc. "
+        f"Nos acceptance_criteria, inclua itens claros (Given/When/Then). Em non_functional, categorize (ex.: performance, segurança, usabilidade, acessibilidade). "
+        f"Em ui_components, detalhe estados e props relevantes. Em data, especifique entidades e campos. "
+        f"Se já houver cobertura mínima em todas as seções e wcag_flags completos, defina ready=true."
     )
     return [
         {"role": "system", "content": system},

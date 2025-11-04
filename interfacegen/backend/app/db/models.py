@@ -46,6 +46,7 @@ class DraftTurn(Base):
     user_answer: Mapped[str] = mapped_column(Text, nullable=True)
     prompt_snapshot: Mapped[str] = mapped_column(Text, nullable=False)
     wcag_flags: Mapped[dict] = mapped_column(JSONB, nullable=True)
+    requirements_doc: Mapped[dict] = mapped_column(JSONB, nullable=True)
     model_name: Mapped[str] = mapped_column(String(64), nullable=True)
     temperature: Mapped[float] = mapped_column(Float, nullable=True)
     duration_ms: Mapped[int] = mapped_column(Integer, nullable=True)

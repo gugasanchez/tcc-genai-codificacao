@@ -140,6 +140,7 @@ def draft_iteration(payload: DraftRequest, db: Session = Depends(get_db)):
         user_answer=payload.user_answer or "",
         prompt_snapshot=prompt_snapshot,
         wcag_flags=wcag_flags,
+        requirements_doc=requirements_doc,
         model_name=llm.settings.llm_model,
         temperature=0.3,
         duration_ms=elapsed_ms,

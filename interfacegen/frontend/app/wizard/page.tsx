@@ -20,6 +20,7 @@ export default function WizardPage() {
   const [aiQuestion, setAiQuestion] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [wcagFlags, setWcagFlags] = useState<Record<string, unknown>>({});
+  const [requirementsDoc, setRequirementsDoc] = useState<any>(null);
   const [readyFlag, setReadyFlag] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -64,6 +65,8 @@ export default function WizardPage() {
         setSuggestions(res.suggestions || []);
         setCurrentPrompt(res.prompt_snapshot);
         setWcagFlags(res.wcag_flags || {});
+        const doc = (res as any)?.wcag_flags?.requirements_doc || null;
+        setRequirementsDoc(doc);
         setReadyFlag(res.ready || false);
         turnsRef.current.push({ aiQuestion: res.ai_question, userAnswer: answer, promptSnapshot: res.prompt_snapshot });
       } catch (e) {
@@ -161,9 +164,32 @@ export default function WizardPage() {
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
               <div className="text-sm font-medium text-zinc-800">Prompt Composto (snapshot)</div>
-              <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap rounded bg-zinc-50 p-3 text-xs text-zinc-800">{currentPrompt}</pre>
+              <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap rounded bg-zinc-50 p-3 text-xs text-zinc-800 md:col-span-2">{currentPrompt}</pre>
+              <div>
+                <div className="text-sm font-medium text-zinc-800">Cobertura WCAG</div>
+                <ul className="mt-2 space-y-1 text-xs text-zinc-700">
+                  {(["alt","label","landmarks","contrast","tabindex"] as const).map(k => (
+                    <li key={k}>{k}: <strong>{String((wcagFlags as any)?.wcag_flags?.[k] ?? (wcagFlags as any)?.[k] ?? false)}</strong></li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-zinc-800">Documento de Requisitos</div>
+                {!requirementsDoc && <p className="mt-2 text-xs text-zinc-600">Aguardando preenchimento...</p>}
+                {requirementsDoc && (
+                  <ul className="mt-2 space-y-1 text-xs text-zinc-700">
+                    <li>Funcionais: <strong>{requirementsDoc.functional?.length ?? 0}</strong></li>
+                    <li>Não Funcionais: <strong>{requirementsDoc.non_functional?.length ?? 0}</strong></li>
+                    <li>Critérios de Aceitação: <strong>{requirementsDoc.acceptance_criteria?.length ?? 0}</strong></li>
+                    <li>Acessibilidade: <strong>{requirementsDoc.accessibility?.length ?? 0}</strong></li>
+                    <li>ARIA Landmarks: <strong>{requirementsDoc.aria_landmarks?.length ?? 0}</strong></li>
+                    <li>Componentes UI: <strong>{requirementsDoc.ui_components?.length ?? 0}</strong></li>
+                    <li>Dados (entidades): <strong>{requirementsDoc.data?.length ?? 0}</strong></li>
+                  </ul>
+                )}
+              </div>
             </div>
 
             {(turnIndex + 1 >= 3 || readyFlag) && (
