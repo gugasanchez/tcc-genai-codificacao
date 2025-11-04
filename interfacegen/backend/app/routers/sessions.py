@@ -6,7 +6,6 @@ from app.db import models
 from app.schemas.session import GenerateRequest, SessionResponse, DraftRequest, DraftResponse, FinalGenerateRequest
 from app.services.llm_client import LLMClient
 from app.services.prompt_builder import build_direct_prompt, build_wizard_prompt, build_refine_messages, build_generate_messages
-from app.services.audits_runner import run_audits
 import uuid
 import hashlib
 import json
@@ -57,12 +56,6 @@ def generate_interface(payload: GenerateRequest, db: Session = Depends(get_db)):
     session.generation_time_ms = elapsed_ms
     session.content_hash = hashlib.sha256(code.encode("utf-8")).hexdigest()
 
-    # Executa auditorias (stub retorna None por enquanto)
-    score, findings = run_audits(code)
-    if score is not None:
-        session.accessibility_score = score
-    if findings is not None:
-        session.wcag_findings = findings
     db.add(session)
     db.commit()
 
@@ -295,12 +288,6 @@ def finalize_generation(payload: FinalGenerateRequest, db: Session = Depends(get
     session.response_code = code
     session.generation_time_ms = elapsed_ms
     session.content_hash = hashlib.sha256(code.encode("utf-8")).hexdigest()
-
-    score, findings = run_audits(code)
-    if score is not None:
-        session.accessibility_score = score
-    if findings is not None:
-        session.wcag_findings = findings
 
     db.add(session)
     db.commit()

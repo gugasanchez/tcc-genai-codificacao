@@ -23,16 +23,6 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
-      - ./audits:/audits
-
-  audits:
-    build:
-      context: ./audits
-      dockerfile: Dockerfile
-    working_dir: /app
-    volumes:
-      - ./audits:/app
-    command: ["sh", "-c", "npm ci && npm run build"]
 
 volumes:
   db_data:
