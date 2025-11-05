@@ -18,7 +18,7 @@ export function FeedbackForm({ sessionId }: Props) {
   const usabilityQs = useMemo(
     () => [
       "O sistema foi fácil de entender e utilizar.",
-      "As etapas desse processo foram bem organizadas.",
+      "As etapas neste processo foram bem organizadas.",
       "Eu me senti confiante durante a interação com a IA.",
       "O sistema respondeu de forma rápida e previsível.",
       "No geral, eu fiquei satisfeito com a experiência de uso.",
@@ -27,11 +27,11 @@ export function FeedbackForm({ sessionId }: Props) {
   );
   const cognitiveQs = useMemo(
     () => [
-      "Eu não precisei fazer muito esforço mental para concluir a tarefa.",
+      "Eu precisei fazer me engajar mentalmente para concluir a tarefa.",
       "Eu consegui entender facilmente o que a IA iria desenvolver.",
-      "Eu não me senti sobrecarregado(a) com as informações apresentadas.",
+      "As informações apresentadas foram fáceis de processar e não me sobrecarregaram.",
       "Eu mantive boa concentração e foco durante todo o processo.",
-      "Eu me senti no controle da tarefa e tranquilo(a) ao interagir com o sistema.",
+      "Senti que estava tranquilo(a) e focado(a) durante a execução da tarefa.",
     ],
     []
   );
@@ -40,8 +40,8 @@ export function FeedbackForm({ sessionId }: Props) {
       "A interface gerada atendeu ao que eu esperava em termos aparência e funcionalidade.",
       "O resultado foi visualmentebem estruturado e de fácil leitura.",
       "O design da interface foi coerente com a descrição do(s) prompt(s).",
-      "A interface gerada foi acessível e coerente com o solicitado.",
-      "Eu confiaria em usar essa interface como base em um projeto real.",
+      "A interface apresentou boa legibilidade, contraste e organização dos elementos.",
+      "Eu consideraria usar essa interface como base em um projeto real.",
     ],
     []
   );
