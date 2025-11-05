@@ -2,6 +2,7 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { api } from "../lib/api";
+import { getLocalParticipantId } from "../lib/participant";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -24,8 +25,11 @@ export default function Home() {
         typeof elapsed === "number" ? elapsed : undefined
       );
       const seed = encodeURIComponent(initialPrompt);
+      const pid = getLocalParticipantId();
       router.push(
-        `/wizard?runId=${res.run_id}&directId=${res.direct_session_id}&seed=${seed}`
+        `/wizard?runId=${res.run_id}&directId=${
+          res.direct_session_id
+        }&seed=${seed}${pid ? `&participantId=${pid}` : ""}`
       );
     } catch (e) {
       alert((e as Error).message);

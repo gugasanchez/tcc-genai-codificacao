@@ -1,4 +1,4 @@
-const PARTICIPANT_KEY = "interfacegen:participantId";
+const PARTICIPANT_KEY = "interfacegen:participant_id";
 
 export function getParticipantId(): string | null {
   if (typeof window === "undefined") return null;

@@ -100,6 +100,14 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.text()) as unknown as T;
 }
 
+export async function createParticipant(): Promise<{ id: string }> {
+  const res = await http<{ id: string; start_mode?: string }>(
+    "/participants",
+    { method: "POST" }
+  );
+  return { id: res.id };
+}
+
 export const api = {
   health: () => http<{ status: string }>("/health"),
   createParticipant: () =>

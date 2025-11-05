@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { api } from "../../lib/api";
-import { getParticipantId } from "../../lib/storage";
+import * as api from "../../lib/api";
+import { ensureParticipantId } from "../../lib/participant";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type WizardState =
@@ -47,7 +47,27 @@ function WizardPageContent() {
     Array<{ aiQuestion: string; userAnswer: string; promptSnapshot: string }>
   >([]);
 
-  const participantId = useMemo(() => getParticipantId(), []);
+  const [participantIdState, setParticipantIdState] = useState<string | null>(null);
+  const [participantReady, setReady] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const pid = await ensureParticipantId({ createParticipant: api.createParticipant });
+        setParticipantIdState(pid);
+        setReady(true);
+      } catch (e) {
+        alert((e as Error)?.message || "Falha ao inicializar participante. Tentando novamente...");
+        try {
+          const pid = await ensureParticipantId({ createParticipant: api.createParticipant });
+          setParticipantIdState(pid);
+          setReady(true);
+        } catch (e2) {
+          alert((e2 as Error)?.message || "Não foi possível criar/recuperar participante.");
+        }
+      }
+    })().catch(() => {});
+  }, []);
 
   useEffect(() => {
     // Start wizard timing when the page is mounted
@@ -55,8 +75,8 @@ function WizardPageContent() {
   }, []);
 
   const startRefine = useCallback(async () => {
-    if (!participantId) {
-      alert("Crie um participante na página inicial antes de continuar.");
+    if (!participantReady || !participantIdState) {
+      alert("Falha ao obter participante. Recarregue a página e tente novamente.");
       return;
     }
     if (!currentPrompt.trim()) {
@@ -69,7 +89,7 @@ function WizardPageContent() {
     setSuggestions([]);
     setUserAnswer("");
     await doTurn(0, "");
-  }, [participantId, currentPrompt]);
+  }, [participantReady, participantIdState, currentPrompt]);
 
   const doTurn = useCallback(
     async (index: number, answer: string) => {
@@ -77,13 +97,13 @@ function WizardPageContent() {
       try {
         const payload = {
           session_id: sessionId ?? undefined,
-          participant_id: undefined,
+          participant_id: sessionId ? undefined : participantIdState || undefined,
           run_id: sessionId ? undefined : runId,
           turn_index: index,
           current_prompt: currentPrompt,
           user_answer: answer,
         };
-        const res = await api.draft(payload as any);
+        const res = await api.api.draft(payload as any);
         setSessionId(res.session_id);
         setAiQuestion(res.ai_question);
         setSuggestions(res.suggestions || []);
@@ -101,7 +121,7 @@ function WizardPageContent() {
         setLoading(false);
       }
     },
-    [participantId, sessionId, currentPrompt]
+    [participantIdState, sessionId, currentPrompt]
   );
 
   const submitAnswer = useCallback(async () => {
