@@ -94,7 +94,11 @@ function ResultsCompareContent() {
             )}
             {direct && (
               <div className="mt-4">
-                <h3 className="text-sm font-medium">Feedback (Direto)</h3>
+                <h3 className="text-base font-medium">
+                  Feedback (Direto): avalie o modo de interação via prompt
+                  direto, onde 1 representa que não está nada de acordo e 5
+                  representa que está totalmente de acordo com a afirmação.
+                </h3>
                 <FeedbackForm sessionId={direct.id} />
               </div>
             )}
@@ -136,7 +140,11 @@ function ResultsCompareContent() {
             )}
             {wizard && (
               <div className="mt-4">
-                <h3 className="text-sm font-medium">Feedback (Wizard)</h3>
+                <h3 className="text-base font-medium">
+                  Feedback (Wizard): avalie o modo de interação via wizard
+                  guiado, onde 1 representa que não está nada de acordo e 5
+                  representa que está totalmente de acordo com a afirmação.
+                </h3>
                 <FeedbackForm sessionId={wizard.id} />
               </div>
             )}
