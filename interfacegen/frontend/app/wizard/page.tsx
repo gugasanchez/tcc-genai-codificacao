@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import * as api from "../../lib/api";
 import { ensureParticipantId } from "../../lib/participant";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -148,7 +148,7 @@ function WizardPageContent() {
     setState("generating");
     try {
       const elapsed = wizardStartAt ? Date.now() - wizardStartAt : undefined;
-      const res = await api.finalize({ session_id: sessionId, ...(typeof elapsed === "number" ? { wizard_phase_time_ms: elapsed } : {}) });
+      const res = await api.api.finalize({ session_id: sessionId, ...(typeof elapsed === "number" ? { wizard_phase_time_ms: elapsed } : {}) });
       if (runId) {
         router.push(`/results-compare?runId=${runId}`);
       } else if (directId) {
