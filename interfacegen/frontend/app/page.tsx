@@ -107,12 +107,6 @@ export default function Home() {
             </div>
           )}
         </section>
-
-        <section className="mt-8 flex items-center justify-between">
-          <Link href="/admin" className="text-sm text-zinc-700 underline">
-            Painel do pesquisador
-          </Link>
-        </section>
       </div>
     </div>
   );
