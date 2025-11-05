@@ -27,7 +27,7 @@ export function FeedbackForm({ sessionId }: Props) {
   );
   const cognitiveQs = useMemo(
     () => [
-      "Eu precisei fazer me engajar mentalmente para concluir a tarefa.",
+      "Eu precisei me engajar mentalmente para concluir a tarefa.",
       "Eu consegui entender facilmente o que a IA iria desenvolver.",
       "As informações apresentadas foram fáceis de processar e não me sobrecarregaram.",
       "Eu mantive boa concentração e foco durante todo o processo.",
