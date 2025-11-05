@@ -18,8 +18,8 @@ export function FeedbackForm({ sessionId }: Props) {
   const usabilityQs = useMemo(
     () => [
       "O sistema foi fácil de entender e utilizar.",
-      "As etapas do processo (wizard ou prompt direto) foram bem organizadas.",
-      "Eu me senti confiante ao usar o sistema para gerar o código.",
+      "As etapas desse processo foram bem organizadas.",
+      "Eu me senti confiante durante a interação com a IA.",
       "O sistema respondeu de forma rápida e previsível.",
       "No geral, eu fiquei satisfeito com a experiência de uso.",
     ],
@@ -28,29 +28,44 @@ export function FeedbackForm({ sessionId }: Props) {
   const cognitiveQs = useMemo(
     () => [
       "Eu não precisei fazer muito esforço mental para concluir a tarefa.",
-      "Eu consegui entender facilmente o que a IA estava fazendo.",
+      "Eu consegui entender facilmente o que a IA iria desenvolver.",
       "Eu não me senti sobrecarregado(a) com as informações apresentadas.",
       "Eu mantive boa concentração e foco durante todo o processo.",
-      "Eu me senti calmo(a) e no controle durante a execução da tarefa.",
+      "Eu me senti no controle da tarefa e tranquilo(a) ao interagir com o sistema.",
     ],
     []
   );
   const qualityQs = useMemo(
     () => [
-      "O código gerado atendeu ao que eu esperava em termos de funcionalidade.",
-      "O resultado foi bem estruturado e de fácil leitura.",
-      "O código seguiu boas práticas e padrões de desenvolvimento.",
+      "A interface gerada atendeu ao que eu esperava em termos aparência e funcionalidade.",
+      "O resultado foi visualmentebem estruturado e de fácil leitura.",
+      "O design da interface foi coerente com a descrição do(s) prompt(s).",
       "A interface gerada foi acessível e coerente com o solicitado.",
-      "Eu confiaria em usar esse código como base em um projeto real.",
+      "Eu confiaria em usar essa interface como base em um projeto real.",
     ],
     []
   );
 
-  const allAnswered = useMemo(() => u.every(Boolean) && c.every(Boolean) && q.every(Boolean), [u, c, q]);
+  const allAnswered = useMemo(
+    () => u.every(Boolean) && c.every(Boolean) && q.every(Boolean),
+    [u, c, q]
+  );
 
-  const uSum = useMemo(() => (u.every(Boolean) ? (u as number[]).reduce((a, b) => a + b, 0) : null), [u]);
-  const cSum = useMemo(() => (c.every(Boolean) ? (c as number[]).reduce((a, b) => a + b, 0) : null), [c]);
-  const qSum = useMemo(() => (q.every(Boolean) ? (q as number[]).reduce((a, b) => a + b, 0) : null), [q]);
+  const uSum = useMemo(
+    () =>
+      u.every(Boolean) ? (u as number[]).reduce((a, b) => a + b, 0) : null,
+    [u]
+  );
+  const cSum = useMemo(
+    () =>
+      c.every(Boolean) ? (c as number[]).reduce((a, b) => a + b, 0) : null,
+    [c]
+  );
+  const qSum = useMemo(
+    () =>
+      q.every(Boolean) ? (q as number[]).reduce((a, b) => a + b, 0) : null,
+    [q]
+  );
 
   const handleSubmit = useCallback(async () => {
     if (!allAnswered) return;
@@ -74,7 +89,9 @@ export function FeedbackForm({ sessionId }: Props) {
   }, [allAnswered, c, comments, q, sessionId, u]);
 
   if (submitted) {
-    return <p className="text-sm text-green-700">Feedback enviado. Obrigado!</p>;
+    return (
+      <p className="text-sm text-green-700">Feedback enviado. Obrigado!</p>
+    );
   }
 
   const LikertRow = ({
@@ -94,7 +111,10 @@ export function FeedbackForm({ sessionId }: Props) {
       <div className="flex-1 pr-3 text-sm text-zinc-800">{label}</div>
       <div className="grid grid-cols-5 gap-2">
         {[1, 2, 3, 4, 5].map((n) => (
-          <label key={n} className="flex cursor-pointer items-center justify-center rounded-md border px-2 py-1 text-xs hover:bg-zinc-50">
+          <label
+            key={n}
+            className="flex cursor-pointer items-center justify-center rounded-md border px-2 py-1 text-xs hover:bg-zinc-50"
+          >
             <input
               type="radio"
               name={`${sessionId}-${group}-${idx}`}
@@ -114,7 +134,9 @@ export function FeedbackForm({ sessionId }: Props) {
       <section>
         <div className="mb-2 flex items-center justify-between">
           <h4 className="text-sm font-medium">Usabilidade</h4>
-          <div className="text-xs text-zinc-600">Soma (5–25): {uSum ?? "-"}</div>
+          <div className="text-xs text-zinc-600">
+            Soma (5–25): {uSum ?? "-"}
+          </div>
         </div>
         <div className="divide-y">
           {usabilityQs.map((qLabel, i) => (
@@ -129,15 +151,19 @@ export function FeedbackForm({ sessionId }: Props) {
                 next[i] = val;
                 setU(next);
               }}
-            />)
-          )}
+            />
+          ))}
         </div>
       </section>
 
       <section>
         <div className="mb-2 flex items-center justify-between">
-          <h4 className="text-sm font-medium">Carga Cognitiva (NASA‑TLX simplificado)</h4>
-          <div className="text-xs text-zinc-600">Soma (5–25): {cSum ?? "-"}</div>
+          <h4 className="text-sm font-medium">
+            Carga Cognitiva (NASA‑TLX simplificado)
+          </h4>
+          <div className="text-xs text-zinc-600">
+            Soma (5–25): {cSum ?? "-"}
+          </div>
         </div>
         <div className="divide-y">
           {cognitiveQs.map((qLabel, i) => (
@@ -152,15 +178,17 @@ export function FeedbackForm({ sessionId }: Props) {
                 next[i] = val;
                 setC(next);
               }}
-            />)
-          )}
+            />
+          ))}
         </div>
       </section>
 
       <section>
         <div className="mb-2 flex items-center justify-between">
           <h4 className="text-sm font-medium">Qualidade Percebida do Código</h4>
-          <div className="text-xs text-zinc-600">Soma (5–25): {qSum ?? "-"}</div>
+          <div className="text-xs text-zinc-600">
+            Soma (5–25): {qSum ?? "-"}
+          </div>
         </div>
         <div className="divide-y">
           {qualityQs.map((qLabel, i) => (
@@ -175,13 +203,15 @@ export function FeedbackForm({ sessionId }: Props) {
                 next[i] = val;
                 setQ(next);
               }}
-            />)
-          )}
+            />
+          ))}
         </div>
       </section>
 
       <div>
-        <label className="block text-sm font-medium text-zinc-800">Comentários</label>
+        <label className="block text-sm font-medium text-zinc-800">
+          Comentários
+        </label>
         <textarea
           className="mt-1 h-24 w-full rounded-md border p-2"
           placeholder="Observações sobre a tarefa"
@@ -199,5 +229,3 @@ export function FeedbackForm({ sessionId }: Props) {
     </div>
   );
 }
-
-
