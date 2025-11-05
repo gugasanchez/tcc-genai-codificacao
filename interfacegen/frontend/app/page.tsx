@@ -49,9 +49,19 @@ export default function Home() {
         <header className="mb-10">
           <h1 className="text-3xl font-semibold">InterfaceGen</h1>
           <p className="mt-2 text-zinc-600">
-            Experimento controlado para gerar interfaces web com IA em dois
-            modos: Prompt Direto e Wizard Guiado por IA, com foco em
-            acessibilidade (WCAG/WAI‑ARIA) e qualidade.
+            Este é um experimento controlado para gerar interfaces web com IA em
+            dois modos: Prompt Direto e Wizard Guiado por IA, com foco em
+            acessibilidade e qualidade. O objetivo é avaliar, para cada um dos
+            dois modos de interação com IA:
+          </p>
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-zinc-700">
+            <li>A usabilidade percebida pelo usuário.</li>
+            <li>A carga cognitiva percebida pelo usuário.</li>
+            <li>A qualidade da interface gerada.</li>
+            <li>O tempo de geração da interface.</li>
+          </ul>
+          <p className="mt-8 text-zinc-600">
+            O processo de geração da interface é realizado da seguinte forma:
           </p>
           <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-zinc-700">
             <li>Você descreve o objetivo inicial (Prompt Direto).</li>
@@ -70,7 +80,9 @@ export default function Home() {
           className="rounded-lg border bg-white p-6 shadow-sm"
           aria-busy={starting}
         >
-          <h2 className="text-xl font-medium">Iniciar experimento</h2>
+          <h2 className="text-xl font-medium">
+            Clique no botão abaixo para iniciar o experimento
+          </h2>
           {!showPrompt && (
             <div className="mt-3">
               <button
